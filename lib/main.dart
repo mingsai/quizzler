@@ -11,6 +11,7 @@ void main() {
   loadData();
   runApp(Quizzler());
 }
+
 void _setTargetPlatformForDesktop() {
   // No need to handle macOS, as it has now been added to TargetPlatform.
   if (Platform.isLinux || Platform.isWindows) {
@@ -79,17 +80,20 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(10.0),
-            child: Center(
-              child: FittedBox(
-                child: Text(
-                  questions[currentIndex].questionText,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.indigoAccent,
-                  ),
-                ),
+            child: Container(
+              alignment: Alignment.center,
+              child: Wrap(
+                children: [
+                  Text(
+                    questions[currentIndex].questionText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 35.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigoAccent,
+                    ),
+                  )
+                ],
               ),
             ),
           ),
