@@ -7,7 +7,7 @@ import 'package:quizzler/question.dart';
 import 'package:quizzler/score.dart';
 
 void main() {
-  _setTargetPlatformForDesktop()
+  _setTargetPlatformForDesktop();
   loadData();
   runApp(Quizzler());
 }
