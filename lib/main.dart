@@ -22,7 +22,10 @@ class Quizzler extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.grey.shade900,
+        appBar: new AppBar(
+          title: Text('Quizzler'),
+        ),
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -70,8 +73,9 @@ class _QuizPageState extends State<QuizPage> {
                 questions[currentIndex].questionText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 25.0,
-                  color: Colors.white,
+                  fontSize: 40.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.indigoAccent,
                 ),
               ),
             ),
