@@ -1,4 +1,4 @@
-package co.mingtech.qizzler
+package co.mingtech.quizzler
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
