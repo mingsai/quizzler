@@ -1,11 +1,21 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:quizzler/question.dart';
 import 'package:quizzler/score.dart';
 
 void main() {
+  _setTargetPlatformForDesktop()
   loadData();
   runApp(Quizzler());
+}
+void _setTargetPlatformForDesktop() {
+  // No need to handle macOS, as it has now been added to TargetPlatform.
+  if (Platform.isLinux || Platform.isWindows) {
+    debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+  }
 }
 
 List<Question> questions = [];
@@ -21,6 +31,7 @@ class Quizzler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: new AppBar(
           title: Text('Quizzler'),
@@ -69,13 +80,15 @@ class _QuizPageState extends State<QuizPage> {
           child: Padding(
             padding: EdgeInsets.all(10.0),
             child: Center(
-              child: Text(
-                questions[currentIndex].questionText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 40.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.indigoAccent,
+              child: FittedBox(
+                child: Text(
+                  questions[currentIndex].questionText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 28.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigoAccent,
+                  ),
                 ),
               ),
             ),
