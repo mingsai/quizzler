@@ -78,24 +78,28 @@ class _QuizPageState extends State<QuizPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Expanded(
-          child: Padding(
+          child: Container(
             padding: EdgeInsets.all(10.0),
-            child: Container(
-              alignment: Alignment.center,
-              child: Wrap(
-                children: [
-                  Text(
-                    questions[currentIndex].questionText,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 35.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.indigoAccent,
-                    ),
-                  )
-                ],
+            alignment: Alignment.center,
+            child: Flexible(
+              flex: 0,
+              child: Text(
+                questions[currentIndex].questionText,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 30.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.indigoAccent,
+                ),
               ),
             ),
+          ),
+        ),
+        Expanded(
+          flex: 0,
+          child: Wrap(
+            children: scoreKeeper,
+            direction: Axis.horizontal,
           ),
         ),
         ButtonTheme(
@@ -151,13 +155,6 @@ class _QuizPageState extends State<QuizPage> {
                 //The user picked false.
               },
             ),
-          ),
-        ),
-        Expanded(
-          flex: 0,
-          child: Wrap(
-            children: scoreKeeper,
-            direction: Axis.horizontal,
           ),
         )
       ],
