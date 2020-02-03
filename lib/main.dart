@@ -5,20 +5,25 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:quizzler/question.dart';
 import 'package:quizzler/score.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _setTargetPlatformForDesktop();
-  final appDocumentDirectory =
-      await path_provider.getApplicationDocumentsDirectory();
-  await Hive.initFlutter(appDocumentDirectory.path);
-  await Hive.registerAdapter(QuestionAdapter());
-  await loadData();
-  await runApp(Quizzler());
+  await setupHive();
+  runApp(Quizzler());
+}
+
+Future<String> _localPath(String path) async {
+  return new Directory(path).toString();
+}
+
+void initDesktopHive() {
+  _localPath('.').then((pathValue) {
+    Hive.init(pathValue);
+  });
 }
 
 void _setTargetPlatformForDesktop() {
@@ -28,16 +33,32 @@ void _setTargetPlatformForDesktop() {
   }
 }
 
+void openHiveBox() async {
+//  if (!Hive.isBoxOpen('question')) {
+  await Hive.openBox('questions');
+//  }
+}
+
 //List<Question> questions = [];
-Future<void> loadData() async {
-  final questionsBox = await Hive.openBox('questions');
-  if (questionsBox.isEmpty) {
-    questionsBox.add(Question(
+void setupHive() async {
+  bool isDesktopEnvironment =
+      Platform.isMacOS || Platform.isLinux || Platform.isWindows;
+  if (isDesktopEnvironment) {
+    initDesktopHive();
+  } else {
+    final appDirectory = await path_provider.getApplicationDocumentsDirectory();
+    if (appDirectory != null) Hive.init(appDirectory.path);
+  }
+  await Hive.registerAdapter(QuestionAdapter());
+  if (!Hive.isBoxOpen('questions')) await Hive.openBox('questions');
+  final box = await Hive.box('questions');
+  if (box.isEmpty) {
+    box.add(Question(
         q: 'You can lead a cow down stairs but not up stairs.', a: false));
-    questionsBox.add(Question(
+    box.add(Question(
         q: 'Approximately one quarter of human bones are in the feet.',
         a: true));
-    questionsBox.add(Question(q: 'A slug\'s blood is green.', a: true));
+    box.add(Question(q: 'A slug\'s blood is green.', a: true));
   }
 }
 
@@ -54,7 +75,22 @@ class Quizzler extends StatelessWidget {
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.0),
-            child: QuizPage(),
+            child: FutureBuilder(
+              future: Hive.openBox('questions'),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                          "Error loading data - ${snapshot.error.toString()}"),
+                    );
+                  }
+                  return QuizPage();
+                } else {
+                  return Center(child: Text("loading"));
+                }
+              },
+            ),
           ),
         ),
       ),
@@ -72,6 +108,15 @@ class _QuizPageState extends State<QuizPage> {
   int currentIndex = 0;
   final questions = Hive.box('questions');
 
+//  @override
+//  void initState() {
+//    // TODO: implement initState
+//    if (!Hive.isBoxOpen('questions')) {
+//      Hive.openBox('questions');
+//    }
+//    super.initState();
+//  }
+
   void incrementIndex() {
     if (currentIndex < questions.length - 1) {
       currentIndex += 1;
@@ -81,11 +126,13 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   bool checkAnswer(int index, bool selectedValue) {
+//    final questions = Hive.box('questions');
     Question obj = questions.getAt(index);
     return obj.questionAnswer == selectedValue;
     //return (questions[index].questionAnswer == selectedValue);
   }
 
+//                Hive.box('questions').getAt(currentIndex).questionText,
   @override
   Widget build(BuildContext context) {
     return Column(
