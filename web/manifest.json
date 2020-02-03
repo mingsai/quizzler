@@ -1,6 +1,6 @@
 {
-    "name": "qizzler",
-    "short_name": "qizzler",
+    "name": "quizzler",
+    "short_name": "quizzler",
     "start_url": ".",
     "display": "minimal-ui",
     "background_color": "#0175C2",

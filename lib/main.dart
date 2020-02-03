@@ -1,15 +1,24 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:quizzler/question.dart';
 import 'package:quizzler/score.dart';
 
-void main() {
-  _setTargetPlatformForDesktop();
-  loadData();
-  runApp(Quizzler());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await _setTargetPlatformForDesktop();
+  final appDocumentDirectory =
+      await path_provider.getApplicationDocumentsDirectory();
+  await Hive.initFlutter(appDocumentDirectory.path);
+  await Hive.registerAdapter(QuestionAdapter());
+  await loadData();
+  await runApp(Quizzler());
 }
 
 void _setTargetPlatformForDesktop() {
@@ -19,13 +28,17 @@ void _setTargetPlatformForDesktop() {
   }
 }
 
-List<Question> questions = [];
-void loadData() {
-  questions.add(Question(
-      q: 'You can lead a cow down stairs but not up stairs.', a: false));
-  questions.add(Question(
-      q: 'Approximately one quarter of human bones are in the feet.', a: true));
-  questions.add(Question(q: 'A slug\'s blood is green.', a: true));
+//List<Question> questions = [];
+Future<void> loadData() async {
+  final questionsBox = await Hive.openBox('questions');
+  if (questionsBox.isEmpty) {
+    questionsBox.add(Question(
+        q: 'You can lead a cow down stairs but not up stairs.', a: false));
+    questionsBox.add(Question(
+        q: 'Approximately one quarter of human bones are in the feet.',
+        a: true));
+    questionsBox.add(Question(q: 'A slug\'s blood is green.', a: true));
+  }
 }
 
 class Quizzler extends StatelessWidget {
@@ -57,6 +70,7 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   List<Widget> scoreKeeper = [];
   int currentIndex = 0;
+  final questions = Hive.box('questions');
 
   void incrementIndex() {
     if (currentIndex < questions.length - 1) {
@@ -67,7 +81,9 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   bool checkAnswer(int index, bool selectedValue) {
-    return (questions[index].questionAnswer == selectedValue);
+    Question obj = questions.getAt(index);
+    return obj.questionAnswer == selectedValue;
+    //return (questions[index].questionAnswer == selectedValue);
   }
 
   @override
@@ -83,11 +99,12 @@ class _QuizPageState extends State<QuizPage> {
             alignment: Alignment.center,
             child: Flexible(
               flex: 0,
-              child: Text(
-                questions[currentIndex].questionText,
+              child: AutoSizeText(
+                questions.getAt(currentIndex).questionText,
+                maxFontSize: 30.0,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 30.0,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Colors.indigoAccent,
                 ),
