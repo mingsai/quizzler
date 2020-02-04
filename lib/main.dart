@@ -16,14 +16,10 @@ void main() async {
   runApp(Quizzler());
 }
 
-Future<String> _localPath(String path) async {
-  return new Directory(path).toString();
-}
-
+//review lifecycle behavior for place to close the Hive
 void initDesktopHive() {
-  _localPath('.').then((pathValue) {
-    Hive.init(pathValue);
-  });
+  final pwd = Directory.current.path;
+  Hive.init(pwd);
 }
 
 void _setTargetPlatformForDesktop() {
@@ -33,21 +29,13 @@ void _setTargetPlatformForDesktop() {
   }
 }
 
-void openHiveBox() async {
-//  if (!Hive.isBoxOpen('question')) {
-  await Hive.openBox('questions');
-//  }
-}
-
-//List<Question> questions = [];
 void setupHive() async {
-  bool isDesktopEnvironment =
-      Platform.isMacOS || Platform.isLinux || Platform.isWindows;
-  if (isDesktopEnvironment) {
-    initDesktopHive();
-  } else {
+  bool isMobileEnvironment = Platform.isAndroid || Platform.isIOS;
+  if (isMobileEnvironment) {
     final appDirectory = await path_provider.getApplicationDocumentsDirectory();
     if (appDirectory != null) Hive.init(appDirectory.path);
+  } else {
+    initDesktopHive();
   }
   await Hive.registerAdapter(QuestionAdapter());
   if (!Hive.isBoxOpen('questions')) await Hive.openBox('questions');
@@ -59,6 +47,7 @@ void setupHive() async {
         q: 'Approximately one quarter of human bones are in the feet.',
         a: true));
     box.add(Question(q: 'A slug\'s blood is green.', a: true));
+    box.compact();
   }
 }
 
@@ -108,15 +97,6 @@ class _QuizPageState extends State<QuizPage> {
   int currentIndex = 0;
   final questions = Hive.box('questions');
 
-//  @override
-//  void initState() {
-//    // TODO: implement initState
-//    if (!Hive.isBoxOpen('questions')) {
-//      Hive.openBox('questions');
-//    }
-//    super.initState();
-//  }
-
   void incrementIndex() {
     if (currentIndex < questions.length - 1) {
       currentIndex += 1;
@@ -126,13 +106,10 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   bool checkAnswer(int index, bool selectedValue) {
-//    final questions = Hive.box('questions');
     Question obj = questions.getAt(index);
     return obj.questionAnswer == selectedValue;
-    //return (questions[index].questionAnswer == selectedValue);
   }
 
-//                Hive.box('questions').getAt(currentIndex).questionText,
   @override
   Widget build(BuildContext context) {
     return Column(
